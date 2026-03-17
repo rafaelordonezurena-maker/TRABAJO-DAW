@@ -1,6 +1,13 @@
-// Modelo “en memoria” de usuarios
-let users = [
-    { id: 1, name: "Admin", email: "admin@sportwear.com", password: "1234" }
-];
+const mongoose = require("mongoose");
 
-module.exports = users;
+const userSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    password: String,
+    role: {
+        type: String,
+        default: "user"
+    }
+});
+
+module.exports = mongoose.model("User", userSchema);
