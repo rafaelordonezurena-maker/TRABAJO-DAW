@@ -1,6 +1,21 @@
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 /* =========================
+   IMÁGENES SEGURAS
+========================= */
+
+function getImage(category) {
+    const images = {
+        running: "https://source.unsplash.com/400x300/?running-shoes",
+        futbol: "https://source.unsplash.com/400x300/?football-boots",
+        fitness: "https://source.unsplash.com/400x300/?gym",
+        tenis: "https://source.unsplash.com/400x300/?tennis-racket"
+    };
+
+    return images[category] || "https://source.unsplash.com/400x300/?sport";
+}
+
+/* =========================
    PRODUCTOS
 ========================= */
 
@@ -14,9 +29,11 @@ async function loadProducts() {
     list.innerHTML = "";
 
     products.forEach(p => {
+        const img = p.image || getImage(p.category);
+
         list.innerHTML += `
         <div class="product">
-            <img src="${p.image}" onerror="this.src='https://via.placeholder.com/300x200?text=SportWear'"/>
+            <img src="${img}" />
             <h3>${p.name}</h3>
             <p class="price">${p.price}€</p>
 
@@ -59,11 +76,13 @@ function renderCart() {
     let total = 0;
 
     cart.forEach(item => {
+        const img = item.image || getImage(item.category);
+
         total += item.price * item.quantity;
 
         cartList.innerHTML += `
         <div class="cart-item">
-            <img src="${item.image}" onerror="this.src='https://via.placeholder.com/80'"/>
+            <img src="${img}" width="60"/>
             <div>
                 <strong>${item.name}</strong>
                 <p>${item.price}€ x ${item.quantity}</p>
@@ -114,7 +133,7 @@ document.getElementById("loginForm")?.addEventListener("submit", async e => {
 
     const res = await fetch("/api/users/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ email, password })
     });
 
@@ -144,7 +163,7 @@ document.getElementById("registerForm")?.addEventListener("submit", async e => {
 
     await fetch("/api/users/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ name, email, password })
     });
 
@@ -170,13 +189,12 @@ document.getElementById("productForm")?.addEventListener("submit", async e => {
         name: document.getElementById("name").value,
         price: document.getElementById("price").value,
         category: document.getElementById("category").value,
-        brand: document.getElementById("brand").value,
-        image: document.getElementById("image").value
+        brand: document.getElementById("brand").value
     };
 
     await fetch("/api/products", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify(product)
     });
 
@@ -204,44 +222,8 @@ async function loadAdminProducts() {
 }
 
 async function deleteProduct(id) {
-    await fetch("/api/products/" + id, {
-        method: "DELETE"
-    });
-
+    await fetch("/api/products/" + id, { method: "DELETE" });
     loadAdminProducts();
-}
-
-/* =========================
-   SEED PRODUCTOS PRO (IMÁGENES BUENAS)
-========================= */
-
-async function seedProducts() {
-
-const products = [
-{ name: "Nike Air Zoom Pegasus", price: 120, category: "running", brand: "Nike", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff" },
-{ name: "Adidas Ultraboost", price: 140, category: "running", brand: "Adidas", image: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519" },
-{ name: "Asics Gel Nimbus", price: 130, category: "running", brand: "Asics", image: "https://images.unsplash.com/photo-1597045566677-8cf032ed6634" },
-
-{ name: "Botas Nike Mercurial", price: 180, category: "futbol", brand: "Nike", image: "https://images.unsplash.com/photo-1570498839593-e565b39455fc" },
-{ name: "Adidas Predator", price: 170, category: "futbol", brand: "Adidas", image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db" },
-
-{ name: "Mancuernas", price: 60, category: "fitness", brand: "Domyos", image: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61" },
-{ name: "Banco de pesas", price: 120, category: "fitness", brand: "Adidas", image: "https://images.unsplash.com/photo-1579758629938-03607ccdbaba" },
-
-{ name: "Raqueta Wilson", price: 110, category: "tenis", brand: "Wilson", image: "https://images.unsplash.com/photo-1611251135345-18d0d0d1d7c6" },
-{ name: "Pelotas tenis", price: 10, category: "tenis", brand: "Head", image: "https://images.unsplash.com/photo-1595433562696-05c0d1b57d3a" }
-];
-
-for (let p of products) {
-    await fetch("/api/products", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(p)
-    });
-}
-
-alert("🔥 Productos PRO reales creados");
-
 }
 
 /* =========================
