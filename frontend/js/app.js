@@ -16,9 +16,9 @@ async function loadProducts() {
     products.forEach(p => {
         list.innerHTML += `
         <div class="product">
-            <img src="${p.image}" />
+            <img src="${p.image}" onerror="this.src='https://via.placeholder.com/300x200?text=SportWear'"/>
             <h3>${p.name}</h3>
-            <p>${p.price}€</p>
+            <p class="price">${p.price}€</p>
 
             <button onclick="addToCart('${p._id}')">
                 Añadir al carrito
@@ -59,39 +59,39 @@ function renderCart() {
     let total = 0;
 
     cart.forEach(item => {
-    total += item.price * item.quantity;
+        total += item.price * item.quantity;
 
-    cartList.innerHTML += `
-    <div class="cart-item">
-        <img src="${item.image}" width="50"/>
-        <div>
-            <strong>${item.name}</strong>
-            <p>${item.price}€ x ${item.quantity}</p>
+        cartList.innerHTML += `
+        <div class="cart-item">
+            <img src="${item.image}" onerror="this.src='https://via.placeholder.com/80'"/>
+            <div>
+                <strong>${item.name}</strong>
+                <p>${item.price}€ x ${item.quantity}</p>
+            </div>
+            <div>
+                <button onclick="increase('${item._id}')">+</button>
+                <button onclick="decrease('${item._id}')">-</button>
+            </div>
         </div>
-        <div>
-            <button onclick="increase('${item._id}')">+</button>
-            <button onclick="decrease('${item._id}')">-</button>
-        </div>
-    </div>
-    `;
-});
+        `;
+    });
 
     cartList.innerHTML += `<h3>Total: ${total}€</h3>`;
 }
 
-function increase(id, size) {
-    const item = cart.find(p => p._id === id && p.size === size);
+function increase(id) {
+    const item = cart.find(p => p._id === id);
     item.quantity++;
     saveCart();
     renderCart();
 }
 
-function decrease(id, size) {
-    const item = cart.find(p => p._id === id && p.size === size);
+function decrease(id) {
+    const item = cart.find(p => p._id === id);
     item.quantity--;
 
     if (item.quantity <= 0) {
-        cart = cart.filter(p => !(p._id === id && p.size === size));
+        cart = cart.filter(p => p._id !== id);
     }
 
     saveCart();
@@ -212,81 +212,36 @@ async function deleteProduct(id) {
 }
 
 /* =========================
-   LOGOUT
-========================= */
-
-function logout() {
-    localStorage.removeItem("user");
-    window.location.href = "login.html";
-}
-
-/* =========================
-   SEED PRODUCTOS PRO
+   SEED PRODUCTOS PRO (IMÁGENES BUENAS)
 ========================= */
 
 async function seedProducts() {
-    const baseProducts = [
-{
-name: "Nike Air Zoom Pegasus",
-price: 120,
-category: "running",
-brand: "Nike",
-image: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519"
-},
-{
-name: "Adidas Ultraboost",
-price: 140,
-category: "running",
-brand: "Adidas",
-image: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a"
-},
-{
-name: "Botas Nike Mercurial",
-price: 180,
-category: "futbol",
-brand: "Nike",
-image: "https://images.unsplash.com/photo-1570498839593-e565b39455fc"
-},
-{
-name: "Adidas Predator",
-price: 160,
-category: "futbol",
-brand: "Adidas",
-image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db"
-},
-{
-name: "Guantes Fitness",
-price: 25,
-category: "fitness",
-brand: "Under Armour",
-image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b"
-},
-{
-name: "Raqueta Tenis",
-price: 90,
-category: "tenis",
-brand: "Wilson",
-image: "https://images.unsplash.com/photo-1611251135345-18d0d0d1d7c6"
-}
+
+const products = [
+{ name: "Nike Air Zoom Pegasus", price: 120, category: "running", brand: "Nike", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff" },
+{ name: "Adidas Ultraboost", price: 140, category: "running", brand: "Adidas", image: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519" },
+{ name: "Asics Gel Nimbus", price: 130, category: "running", brand: "Asics", image: "https://images.unsplash.com/photo-1597045566677-8cf032ed6634" },
+
+{ name: "Botas Nike Mercurial", price: 180, category: "futbol", brand: "Nike", image: "https://images.unsplash.com/photo-1570498839593-e565b39455fc" },
+{ name: "Adidas Predator", price: 170, category: "futbol", brand: "Adidas", image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db" },
+
+{ name: "Mancuernas", price: 60, category: "fitness", brand: "Domyos", image: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61" },
+{ name: "Banco de pesas", price: 120, category: "fitness", brand: "Adidas", image: "https://images.unsplash.com/photo-1579758629938-03607ccdbaba" },
+
+{ name: "Raqueta Wilson", price: 110, category: "tenis", brand: "Wilson", image: "https://images.unsplash.com/photo-1611251135345-18d0d0d1d7c6" },
+{ name: "Pelotas tenis", price: 10, category: "tenis", brand: "Head", image: "https://images.unsplash.com/photo-1595433562696-05c0d1b57d3a" }
 ];
 
-    for (let i = 0; i < 50; i++) {
-        const base = baseProducts[i % baseProducts.length];
+for (let p of products) {
+    await fetch("/api/products", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(p)
+    });
+}
 
-        const product = {
-            ...base,
-            name: base.name + " " + i,
-            price: base.price + Math.floor(Math.random() * 30)
-        };
+alert("🔥 Productos PRO reales creados");
 
-        await fetch("/api/products", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(product)
-        });
-    }
-
-    alert("🔥 Productos PRO creados");
 }
 
 /* =========================
